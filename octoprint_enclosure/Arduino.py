@@ -1,20 +1,28 @@
-#!/usr/bin/python
+import sys
+import smbus2
+import bme280
 
-import BME280
+if len(sys.argv) == 2:
+    DEVICE = int(sys.argv[1], 16)
+else:
+    print('-1 | -1')
+    sys.exit(1)
 
-bme280 = BME280.BME()
+# Rev 2 Pi, Pi 2 & Pi 3 & Pi 4 use bus 1
+# Rev 1 Pi uses bus 0
+bus = smbus2.SMBus(1)
+
+def read_dht():
+  data = bus.read_i2c_block_data(80, 0, 5)
+  return data
 
 def main():
+  try:
+    data = read_dht()
 
-  (chip_id, chip_version) = bme280.readBME280ID()
-  print("Chip ID     :" + chip_id)
-  print("Version     :" + chip_version)
+    print('{0:0.1f} | {1:0.1f}'.format(data.temperature, data.humidity))
+  except:
+     print('-1 | -1')
 
-  temperature,pressure,humidity = bme280.readBME280All()
-
-  print("Temperature : " + temperature + "C")
-  print("Pressure : " + pressure + "hPa")
-  print("Humidity : " + humidity + "%")
-
-if __name__=="__main__":
+if __name__== "__main__":
    main()
